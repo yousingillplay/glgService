@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+  <!-- Load properties for this application.  You can     -->
+  <!-- inject them into code using the @Value annotation. -->
+  <bean id="appProperties"
+      class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <property name="singleton" value="true" />
+    <property name="ignoreResourceNotFound" value="true" />
+    <!-- Configure default values here -->
+    <property name="properties">
+      <props>
+        <prop key="jdbc.driverClassName">oracle.jdbc.driver.OracleDriver</prop>
+      </props>
+    </property>
+    <!-- Override the defaults; ffw.home is set as a JVM system property.  -->
+    <!-- If you have multiple property files, use the "locations" property -->
+    <!-- and an embedded <list> with <value> nodes for each file.          -->
+    <property name="locations">
+      <list>
+        <!-- External property files -->
+        <value>file:${ffw.home}/glgService.properties</value>
+        <!-- Created by the build process to contain version info -->
+        <value>classpath:buildinfo.properties</value>
+        <!-- Global menu definition -->
+        <value>classpath:menu.properties</value>
+      </list>
+    </property>
+  </bean>
+
+  <!-- Expose the properties so other parts of the Spring config can use them -->
+  <context:property-placeholder properties-ref="appProperties" />
+
+  <!-- Persistence related configuration -->
+  <import resource="applicationContext-persistence.xml"/>
+
+  <!-- Security related configuration -->
+  <!--  <import resource="applicationContext-security.xml"/>-->
+
+</beans>

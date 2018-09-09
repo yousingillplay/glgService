@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+  <definition name="commonPage" template="/WEB-INF/tiles/layouts/topmenulayout.jsp">
+    <put-attribute name="header" value="/WEB-INF/tiles/jsp/header.jsp" />
+    <put-attribute name="menu" value="/WEB-INF/views/menu.jsp" />
+    <put-attribute name="footer" value="/WEB-INF/tiles/jsp/footer.jsp" />
+  </definition>
+
+  <!-- Views ending in "Dialog" have no header, menu or      -->
+  <!-- footer. Useful for creating jQuery popup dialogs.     -->
+  <definition name="*/*Dialog" template="/WEB-INF/views/{1}/{2}Dialog.jsp" />
+  <definition name="*Dialog" template="/WEB-INF/views/{1}Dialog.jsp" />
+
+  <!-- All other views get the header, menu and footer tiles. -->
+  <!-- Definitions are given for two levels of depth.         -->
+  <definition name="*" extends="commonPage">
+    <put-attribute name="body" value="/WEB-INF/views/{1}.jsp" />
+  </definition>
+  <definition name="*/*" extends="commonPage">
+    <put-attribute name="body" value="/WEB-INF/views/{1}/{2}.jsp" />
+  </definition>
+
+</tiles-definitions>

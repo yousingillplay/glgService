@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite
+    PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+    "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+<urlrewrite default-match-type="regex">
+    <rule>
+        <from>^([^;]*);(.*)</from>
+        <to>$1</to>
+    </rule>
+    <rule>
+        <from>^(.*)/webjars/(.*)</from>
+        <to last="true">/webjars/$2</to>
+    </rule>
+    <rule>
+        <from>^(.*)/css/(.*)</from>
+        <to last="true">/css/$2</to>
+    </rule>
+    <rule>
+        <from>^(.*)/fonts/(.*)</from>
+        <to last="true">/fonts/$2</to>
+    </rule>
+    <rule>
+        <from>^(.*)/images/(.*)</from>
+        <to last="true">/images/$2</to>
+    </rule>
+    <rule>
+        <from>^(.*)/js/(.*)</from>
+        <to last="true">/js/$2</to>
+    </rule>
+    <rule>
+        <from>^(.*)/html/(.*)</from>
+        <to last="true">/html/$2</to>
+    </rule>
+    <rule>
+        <from>/(.*)</from>
+        <to>/web/$1</to>
+    </rule>
+    <outbound-rule>
+        <from>/web/(.*)</from>
+        <to>/$1</to>
+    </outbound-rule>
+</urlrewrite>

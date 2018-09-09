@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+      http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- Tell Spring to scan this app for general and web-app annotation-based config -->
+    <context:component-scan base-package="com.ti.techmania.glgservice"/>
+    <mvc:annotation-driven/>
+    <mvc:resources mapping="/webjars/**" location="/webjars/"/>
+    <!-- Enable scanning for Spring AOP (Aspects) -->
+    <aop:aspectj-autoproxy/>
+
+    <!-- Load properties for this application.  You can     -->
+    <!-- inject them into code using the @Value annotation. -->
+    <bean id="appProperties"
+          class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="singleton" value="true" />
+        <property name="ignoreResourceNotFound" value="true" />
+        <!-- Configure default values here -->
+        <property name="properties">
+            <props>
+                <prop key="jdbc.driverClassName">oracle.jdbc.driver.OracleDriver</prop>
+            </props>
+        </property>
+        <!-- Override the defaults; ffw.home is set as a JVM system property.  -->
+        <property name="locations">
+            <list>
+                <!-- External property files -->
+                <value>file:${ffw.home}/glgService.properties</value>
+                <!-- Created by the build process to contain version info -->
+                <value>classpath:buildinfo.properties</value>
+                <!-- Global menu definition -->
+                <value>classpath:menu.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!--<mvc:interceptors>
+        <bean class="com.ti.techmania.glgservice.logging.LoggingInterceptor" />
+    </mvc:interceptors>-->
+
+    <!-- Create a mailer utility bean -->
+    <bean id="mailer" class="com.ti.util.email.Mailer"
+          c:host="smtp.mail.ti.com" c:defaultSender="glgService"/>
+
+    <!-- Expose the properties so other parts of the Spring config can use them -->
+    <context:property-placeholder properties-ref="appProperties" />
+
+    <!-- Persistence related configuration -->
+    <import resource="applicationContext-persistence.xml"/>
+
+    <!-- Security related configuration -->
+    <import resource="applicationContext-security.xml"/>
+
+</beans>

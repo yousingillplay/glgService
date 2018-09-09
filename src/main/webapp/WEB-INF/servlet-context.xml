@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- Tell Spring that views will be rendered by Tiles -->
+  <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+    <property name="viewClass" value="org.springframework.web.servlet.view.tiles3.TilesView"/>
+    <!-- menu.jsp uses menu.properties; footer.jsp uses buildinfo properties -->
+    <property name="attributes" ref="appProperties"/>
+  </bean>
+
+  <!-- Tell Tiles where the Tiles configuration is -->
+  <bean id="tilesConfigurer" class="org.springframework.web.servlet.view.tiles3.TilesConfigurer">
+    <property name="definitions">
+      <list>
+        <value>/WEB-INF/tiles/defs/general.xml</value>
+      </list>
+    </property>
+  </bean>
+
+</beans>

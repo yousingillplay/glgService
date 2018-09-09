@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:sec="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <bean id="TISecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
+        <sec:filter-chain-map request-matcher="ant">
+            <sec:filter-chain pattern="/webjars/**" filters="none"/>
+            <sec:filter-chain pattern="/images/**" filters="none"/>
+            <sec:filter-chain pattern="/css/**" filters="none"/>
+            <sec:filter-chain pattern="/js/**" filters="none"/>
+            <sec:filter-chain pattern="/html/**" filters="none"/>
+            <sec:filter-chain pattern="/monitor" filters="none"/>
+            <sec:filter-chain pattern="/**" filters="none"/>
+        </sec:filter-chain-map>
+    </bean>
+    
+    <bean id="tiSecurityLogger" class="com.ti.spring.web.security.logging.TISecurityLogger"/>
+    
+    <bean id="webSecFilter" class="com.ti.spring.web.security.WebSecurityFilter">
+        <property name="whitelist">
+            <!-- You can change factory method value here to configure sanitizer sensitivity -->
+            <bean id="whitelist" class="org.jsoup.safety.Whitelist" factory-method="relaxed"/>
+        </property>
+        <!-- You can change value here to configure xFrame controls-->
+        <!-- SAMEORIGIN to allow framing of this content only by this site-->
+        <!-- DENY to prevent all framing of this content-->
+        <property name="xFrameOption"  value="SAMEORIGIN"/>
+    </bean>
+
+    <bean id="sif" class="org.springframework.security.web.context.SecurityContextPersistenceFilter"/>
+
+    <bean id="loginFilter" class="com.ti.ta.J2eeLoginFilter"/>
+
+    <sec:authentication-manager alias="authenticationManager">
+        <sec:authentication-provider ref="preAuthenticatedAuthenticationProvider"/>
+    </sec:authentication-manager>
+
+    <bean id="preAuthenticatedAuthenticationProvider"
+        class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
+        <property name="preAuthenticatedUserDetailsService">
+            <bean id="userDetailsServiceWrapper"
+            class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
+                <property name="userDetailsService" ref="userDetailsService"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="userDetailsService" class="com.ti.spring.web.security.TiUserDetailsService">
+        <property name="dataSource" ref="dataSource" />
+        <property name="employeeDirectory" ref="employeeDirectory" />
+        <property name="authorizationEnabled" value="false" />
+        <property name="ldapEnabled" value="false" />
+        <property name="usersTableName" value="GLGSERVICE_USERS" />
+        <property name="authoritiesTableName" value="GLGSERVICE_AUTHORITIES" />
+    </bean>
+
+    <bean id="employeeDirectory" class="com.ti.util.directoryservices.EmployeeDirectory" />
+
+    <bean id="tipassFilter"
+        class="com.ti.spring.web.security.CookieRequestHeaderAuthenticationFilter">
+        <property name="authenticationManager" ref="authenticationManager" />
+        <property name="checkForPrincipalChanges" value="true"/>
+        <property name="invalidateSessionOnPrincipalChange" value="true"/>
+    </bean>
+
+    <!-- Displays 403 error if user is not authenticated -->
+    <bean id="preAuthenticatedProcessingFilterEntryPoint"
+        class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint"/>
+
+    <bean id="logoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+        <constructor-arg value="/"/>
+        <constructor-arg>
+            <list>
+                <bean class="com.ti.spring.web.security.TiLogoutHandler"/>
+            </list>
+        </constructor-arg>
+        <property name="filterProcessesUrl" value="/logout" />
+    </bean>
+
+    <bean id="etf" class="org.springframework.security.web.access.ExceptionTranslationFilter">
+        <constructor-arg ref="preAuthenticatedProcessingFilterEntryPoint"/>
+    </bean>
+
+    <bean id="httpRequestAccessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+        <property name="allowIfAllAbstainDecisions" value="false"/>
+        <constructor-arg name="decisionVoters">
+            <list>
+                <ref bean="authenticatedVoter"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+
+    <bean id="fsi" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="accessDecisionManager" ref="httpRequestAccessDecisionManager"/>
+        <property name="securityMetadataSource">
+            <sec:filter-security-metadata-source use-expressions="true">
+                <sec:intercept-url pattern="/**" access="isAuthenticated()"/>
+            </sec:filter-security-metadata-source>
+        </property>
+    </bean>
+
+    <bean id="authenticatedVoter" class="org.springframework.security.web.access.expression.WebExpressionVoter" />
+
+    <sec:global-method-security pre-post-annotations="enabled" />
+    <sec:http auto-config="true" use-expressions="true"/>
+</beans>

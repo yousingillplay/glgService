@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- $Id: LotDao.xml,v 1.7 2014/02/05 00:34:00 a0199948 Exp $ -->
+<!-- TODO: remove (demonstration only) -->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ti.techmania.glgservice.repository.LotDao">
+
+  <cache/>
+
+  <resultMap id="lotMap" type="com.ti.techmania.glgservice.domain.Lot">
+    <id property="lot" column="lot"/>
+    <result property="lpt" column="lpt"/>
+    <result property="curQty" column="cur_qty"/>
+  </resultMap>
+
+  <select id="getLotList" parameterType="String" resultMap="lotMap">
+        SELECT lot,lpt,cur_qty
+          FROM lot
+         WHERE facility=#{facility}
+           AND start_dttm>SYSDATE-1
+         ORDER BY lpt,lot
+  </select>
+
+  <select id="getLot" parameterType="map" resultType="com.ti.techmania.glgservice.domain.Lot">
+        SELECT lot,lpt,cur_qty curQty
+          FROM lot
+         WHERE facility=#{facility} AND lot=#{lot}
+  </select>
+
+  <select id="getLotTotal" parameterType="String" resultType="int">
+        SELECT count(1)
+          FROM lot
+         WHERE facility=#{facility}
+           AND start_dttm>SYSDATE-1
+  </select>
+
+  <select id="getMatchingLotTotal" parameterType="map" resultType="int">
+    <bind name="lotPattern" value="'%' + lotSearch + '%'" />
+    <bind name="lptPattern" value="'%' + lptSearch + '%'" />
+    <bind name="qtyPattern" value="'%' + qtySearch + '%'" />
+        SELECT count(1)
+          FROM lot
+         WHERE facility=#{facility}
+           AND start_dttm>SYSDATE-1
+           AND lot LIKE #{lotPattern}
+           AND lpt LIKE #{lptPattern}
+           AND cur_qty LIKE #{qtyPattern}
+  </select>
+
+  <select id="getMatchingLots" parameterType="map" resultMap="lotMap">
+    <bind name="lotPattern" value="'%' + lotSearch + '%'" />
+    <bind name="lptPattern" value="'%' + lptSearch + '%'" />
+    <bind name="qtyPattern" value="'%' + qtySearch + '%'" />
+        SELECT * FROM (
+          SELECT rownum rn, s.* FROM (
+            SELECT lot,lpt,cur_qty
+              FROM lot
+             WHERE facility=#{facility}
+               AND start_dttm>SYSDATE-1
+               AND lot LIKE #{lotPattern}
+               AND lpt LIKE #{lptPattern}
+               AND cur_qty LIKE #{qtyPattern}
+             ORDER BY
+            <choose>
+              <when test="sortCol==0">lot</when>
+              <when test="sortCol==1">lpt</when>
+              <when test="sortCol==2">cur_qty</when>
+            </choose>
+            <!-- MyBatis note: #{} is a parameter substitution while ${} is
+                 a string substitution. ${sortDir} is used below instead of
+                 #{sortDir} to avoid having MyBatis add quotation marks. -->
+            ${sortDir}
+          ) s
+        )
+        WHERE rn BETWEEN #{start} + 1 AND #{start} + #{length}
+  </select>
+
+</mapper>

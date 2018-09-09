@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- $Id: LotDao.xml,v 1.7 2014/02/05 00:34:00 a0199948 Exp $ -->
+<!-- TODO: remove (demonstration only) -->
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ti.techmania.glgservice.repository.GLGDao">
+
+  <resultMap id="glgItemMap" type="com.ti.techmania.glgservice.domain.GLGLotItem">
+    <id property="id" column="id"/>
+    <result property="lot" column="lot"/>
+    <result property="lptOpnSeqId" column="lpt_opn_seq_id"/>
+    <result property="facility" column="facility"/>
+    <result property="equipment" column="equipment"/>
+    <result property="tranDttm" column="tran_dttm"/>
+    <result property="loginDttm" column="login_dttm"/>
+  </resultMap>
+  
+  <resultMap id="glgLptOpnSeq" type="com.ti.techmania.glgservice.domain.GLGLptOpnSeq">
+    <id property="id" column="id"/>
+    <result property="logpoint" column="logpoint"/>
+    <result property="operation" column="operation"/>
+    <result property="sequence" column="sequence"/>
+  </resultMap>
+  
+  <update id="callGLGGenData" parameterType="String" statementType="CALLABLE">
+      { CALL p_glg_data.generate(#{lot}) }
+  </update>
+  
+  <select id="getGLGLotItems" resultMap="glgItemMap">
+    SELECT RAWTOHEX(id) AS id,
+           lot,
+           lpt_opn_seq_id,
+           'PHI' AS facility,
+           equipment,
+           TO_CHAR(tran_dttm, 'YYYY-MM-DD HH24:MI') AS tran_dttm,
+           TO_CHAR(login_dttm, 'YYYY-MM-DD HH24:MI') AS login_dttm
+      FROM gtt_lpt_equip_data_out
+  </select>
+      
+  <select id="getGLGParents" parameterType="String" resultType="String">
+    SELECT DISTINCT RAWTOHEX(parent_id) AS parent_id
+      FROM gtt_lpt_equip_parents
+     WHERE RAWTOHEX(id) = #{id}
+  </select>
+
+  <select id="getLptOpnSeq" resultMap="glgLptOpnSeq">
+    SELECT id,
+           logpoint,
+           operation,
+           sequence
+      FROM gtt_lpt_opn_sequence
+    ORDER BY sequence
+  </select>
+</mapper>
