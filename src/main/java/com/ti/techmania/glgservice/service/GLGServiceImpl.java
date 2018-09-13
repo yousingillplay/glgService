@@ -1,13 +1,16 @@
 //$Id: LotServiceImpl.java,v 1.4 2012/11/20 23:26:50 a0199948 Exp $
 package com.ti.techmania.glgservice.service;
 
+import com.ti.techmania.glgservice.domain.GLGAdjLotData;
 import com.ti.techmania.glgservice.domain.GLGData;
+import com.ti.techmania.glgservice.domain.GLGEquip;
 import com.ti.techmania.glgservice.domain.GLGLotItem;
 import com.ti.techmania.glgservice.domain.GLGLptOpnSeq;
 import com.ti.techmania.glgservice.domain.Lot;
 import com.ti.techmania.glgservice.repository.GLGDao;
 import com.ti.techmania.glgservice.repository.LotDao;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,24 @@ public class GLGServiceImpl implements GLGService {
         }
         
         List<GLGLptOpnSeq> glgLptOpnSeqs = glgDao.getLptOpnSeq();
+        
+        for (GLGLptOpnSeq glgLptOpnSeq : glgLptOpnSeqs) {
+            List<String> equipments = glgDao.getEquipments(glgLptOpnSeq.getId());
+            List<GLGEquip> glgEquips = new ArrayList<GLGEquip>();
+            for (String equipment : equipments) {
+                List<String> lotIds = glgDao.getLotIds(glgLptOpnSeq.getId(), equipment);
+                List<GLGAdjLotData> adjacentLots = glgDao.getAdjacentLots(equipment);
+                Float commonalityPercent = glgDao.getCommonality(glgLptOpnSeq.getLogpoint(), glgLptOpnSeq.getOperation(), equipment);
+                GLGEquip glgEquip = new GLGEquip();
+                glgEquip.setEquipment(equipment);
+                glgEquip.setLotIds(lotIds);
+                glgEquip.setAdjacentLots(adjacentLots);
+                glgEquip.setCommonalityPercent(commonalityPercent);
+                glgEquips.add(glgEquip);
+            }
+            
+            glgLptOpnSeq.setEquipments(glgEquips);
+        }
         
         GLGData glgData = new GLGData();
         glgData.setGlgData(glgLotItems);

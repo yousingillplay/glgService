@@ -34,8 +34,12 @@ public class GLGController {
     
     @RequestMapping(value = "/lotLptEquip", method = RequestMethod.POST)
     public GLGData lotLptEquip(@RequestBody String lot) {
-        GLGData glgData = glgService.getGlgData(lot);
-        
+        GLGData glgData = new GLGData();
+        try {
+            glgData = glgService.getGlgData(lot);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return glgData;
     }
 }

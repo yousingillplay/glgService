@@ -19,7 +19,8 @@ public class GLGLptOpnSeq implements Serializable {
     private String logpoint;
     private String operation;
     private long sequence;
-
+    private List<GLGEquip> equipments;
+    
     public String getId() {
         return id;
     }
@@ -51,6 +52,15 @@ public class GLGLptOpnSeq implements Serializable {
     public void setSequence(long sequence) {
         this.sequence = sequence;
     }
+
+    public List<GLGEquip> getEquipments() {
+        return equipments;
+    }
+
+    public void setEquipments(List<GLGEquip> equipments) {
+        this.equipments = equipments;
+    }
+    
     
     public String toString() {
         return new Gson().toJson(this);

@@ -24,6 +24,19 @@
     <result property="sequence" column="sequence"/>
   </resultMap>
   
+  <resultMap id="glgAdjLotDataMap" type="com.ti.techmania.glgservice.domain.GLGAdjLotData">
+    <result property="lotUnderInv" column="lot_under_inv"/>
+    <result property="adjacentLot" column="adjacent_lot"/>
+    <result property="equipment" column="equipment"/>
+    <result property="startDttm" column="start_dttm"/>
+    <result property="loginDttm" column="login_dttm"/>
+    <result property="adjLoginDttm" column="adj_login_dttm"/>
+    <result property="currentLogpoint" column="current_logpoint"/>
+    <result property="lastLogpoint" column="last_logpoint"/>
+    <result property="lastActDttm" column="last_act_dttm"/>
+    <result property="isAutomotive" column="is_automotive"/>
+  </resultMap>
+  
   <update id="callGLGGenData" parameterType="String" statementType="CALLABLE">
       { CALL p_glg_data.generate(#{lot}) }
   </update>
@@ -37,6 +50,7 @@
            TO_CHAR(tran_dttm, 'YYYY-MM-DD HH24:MI') AS tran_dttm,
            TO_CHAR(login_dttm, 'YYYY-MM-DD HH24:MI') AS login_dttm
       FROM gtt_lpt_equip_data_out
+    ORDER BY logpoint, operation, tran_dttm
   </select>
       
   <select id="getGLGParents" parameterType="String" resultType="String">
@@ -52,5 +66,44 @@
            sequence
       FROM gtt_lpt_opn_sequence
     ORDER BY sequence
+  </select>
+  
+  <select id="getEquipments" parameterType="String" resultType="String">
+    SELECT distinct equipment
+      FROM gtt_lpt_equip_data_out
+     WHERE RAWTOHEX(lpt_opn_seq_id) = #{lptOpnSeqId}
+    ORDER BY equipment
+  </select>
+  
+  <select id="getLotIds" parameterType="map" resultType="String">
+    SELECT distinct RAWTOHEX(id) as lot_id
+      FROM gtt_lpt_equip_data_out
+     WHERE RAWTOHEX(lpt_opn_seq_id) = #{lptOpnSeqId}
+       AND equipment = #{equipment}
+    ORDER BY lot_id
+  </select>
+  
+  <select id="getAdjacentLots" parameterType="String" resultMap="glgAdjLotDataMap">
+    SELECT lot_under_inv,
+           adjacent_lot,
+           equipment,
+           TO_CHAR(start_dttm, 'YYYY-MM-DD HH24:MI') AS start_dttm,
+           TO_CHAR(login_dttm, 'YYYY-MM-DD HH24:MI') AS login_dttm,
+           TO_CHAR(adj_login_dttm, 'YYYY-MM-DD HH24:MI') AS adj_login_dttm,
+           current_logpoint,
+           last_logpoint,
+           TO_CHAR(last_act_dttm, 'YYYY-MM-DD HH24:MI') AS last_act_dttm,
+           is_automotive
+      FROM s_adjacent_lot_data
+     WHERE equipment = #{equipment}
+    ORDER BY last_act_dttm
+  </select>
+  
+  <select id="getCommonality" parameterType="map" resultType="float">
+    SELECT commonality_percent
+      FROM s_equip_commonality_data
+     WHERE equipment = #{equipment}
+       AND logpoint = #{logpoint}
+      AND operation = #{operation}
   </select>
 </mapper>
